@@ -8,7 +8,7 @@ const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-sync function redisSave(events) {
+async function redisSave(events) {
   const r = await fetch(UPSTASH_REDIS_REST_URL, {
     method: "POST",
     headers: {
