@@ -45,7 +45,7 @@ async function searchBatch(searches, batchName) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 5000,
       system: "You are a JSON API. Search the web for real events. ONLY include events you actually find on real websites — never invent or guess. Return ONLY a raw JSON array starting with [ and ending with ]. No markdown, no code fences, no explanation.",
       tools: [{ type: "web_search_20250305", name: "web_search" }],
@@ -104,8 +104,8 @@ async function main() {
 5. site:peoriaheightschamber.com events 2026 — St Patrick's Day Parade, Hot in the Heights, After Hours, Bar Stool Open`, "Batch 1: Regional");
   allEvents.push(...b1);
 
-  console.log("Waiting 120s before batch 2...");
-  await sleep(120000);
+  console.log("Waiting 65s before batch 2...");
+  await sleep(65000);
 
   // BATCH 2: Prospect Rd — group 1
   const b2 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
@@ -116,8 +116,8 @@ async function main() {
 5. "Oliver's in the Heights" Peoria Heights events 2026`, "Batch 2: Prospect Rd A");
   allEvents.push(...b2);
 
-  console.log("Waiting 120s before batch 3...");
-  await sleep(120000);
+  console.log("Waiting 65s before batch 3...");
+  await sleep(65000);
 
   // BATCH 3: Prospect Rd — group 2
   const b3 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
