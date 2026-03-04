@@ -8,24 +8,25 @@ const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function redisSave(events) {
-  const r = await fetch(`${UPSTASH_REDIS_REST_URL}/set/events`, {
+sync function redisSave(events) {
+  const r = await fetch(UPSTASH_REDIS_REST_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ value: JSON.stringify(events) }),
+    body: JSON.stringify(["SET", "events", JSON.stringify(events)]),
   });
-  await fetch(`${UPSTASH_REDIS_REST_URL}/set/events_updated`, {
+  await fetch(UPSTASH_REDIS_REST_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ value: Date.now().toString() }),
+    body: JSON.stringify(["SET", "events_updated", Date.now().toString()]),
   });
-  return r.ok;
+  const result = await r.json();
+  return result.result === "OK";
 }
 
 async function searchBatch(searches, batchName) {
