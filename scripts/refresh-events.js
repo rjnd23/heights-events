@@ -104,7 +104,7 @@ async function main() {
   allEvents.push(...b1);
 
   console.log("Waiting 70s before batch 2...");
-  await sleep(70000);
+  await sleep(90000);
 
   // BATCH 2: Prospect Rd — group 1
   const b2 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
@@ -116,7 +116,7 @@ async function main() {
   allEvents.push(...b2);
 
   console.log("Waiting 70s before batch 3...");
-  await sleep(70000);
+  await sleep(90000);
 
   // BATCH 3: Prospect Rd — group 2
   const b3 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
