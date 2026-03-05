@@ -104,8 +104,8 @@ async function main() {
 5. site:peoriaheightschamber.com events 2026 — St Patrick's Day Parade, Hot in the Heights, After Hours, Bar Stool Open`, "Batch 1: Regional");
   allEvents.push(...b1);
 
-  console.log("Waiting 65s before batch 2...");
-  await sleep(65000);
+  console.log("Waiting 180s before batch 2...");
+  await sleep(180000);
 
   // BATCH 2: Prospect Rd — group 1
   const b2 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
@@ -116,8 +116,8 @@ async function main() {
 5. "Oliver's in the Heights" Peoria Heights events 2026`, "Batch 2: Prospect Rd A");
   allEvents.push(...b2);
 
-  console.log("Waiting 65s before batch 3...");
-  await sleep(65000);
+  console.log("Waiting 180s before batch 3...");
+  await sleep(180000);
 
   // BATCH 3: Prospect Rd — group 2
   const b3 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
