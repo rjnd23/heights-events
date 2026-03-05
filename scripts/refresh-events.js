@@ -178,46 +178,48 @@ const RESTAURANTS = [
 ];
 
 // Try to extract events from raw HTML — best effort, works on server-rendered sites
-// ONLY matches named month patterns to avoid false positives from prices/phone numbers
 function parseEventsFromHtml(html, restaurant, sourceUrl) {
   const today = new Date().toISOString().split("T")[0];
   const in6mo = new Date(Date.now() + 180*24*60*60*1000).toISOString().split("T")[0];
   const year = new Date().getFullYear();
   const events = [];
   const MAX_PER_RESTAURANT = 20;
+  const EVENT_KEYWORDS = /\b(event|live|music|trivia|karaoke|bingo|comedy|show|night|special|happy hour|brunch|tasting|class|yoga|open mic)\b/i;
 
-  // ONLY match written month names — never bare numeric patterns like 3/15 or 309-555-1234
-  const datePattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?\b/gi;
-  const dateMatches = [...html.matchAll(datePattern)];
+  const cleanHtml = html.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "");
+  const candidates = [];
 
-  if (dateMatches.length === 0) return events;
-
-  for (const match of dateMatches) {
-    if (events.length >= MAX_PER_RESTAURANT) break;
-
-    const [, monRaw, dayRaw, yearRaw] = match;
+  // Pattern 1: Written month names — always trustworthy
+  const namedPattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?\b/gi;
+  for (const m of cleanHtml.matchAll(namedPattern)) {
+    const [, monRaw, dayRaw, yearRaw] = m;
     const mon = MONTH_MAP[monRaw.toLowerCase().slice(0, 3)];
     if (!mon) continue;
-
-    const curMonth = new Date().getMonth() + 1;
     const evMonth = parseInt(mon, 10);
-    const evYear = yearRaw
-      ? (yearRaw.length === 2 ? "20" + yearRaw : yearRaw)
-      : (evMonth < curMonth ? String(year + 1) : String(year));
+    const curMonth = new Date().getMonth() + 1;
+    const evYear = yearRaw ? yearRaw : (evMonth < curMonth ? String(year + 1) : String(year));
+    candidates.push({ date: `${evYear}-${mon}-${dayRaw.padStart(2,"0")}`, idx: m.index, named: true });
+  }
 
-    const date = `${evYear}-${mon}-${dayRaw.padStart(2, "0")}`;
+  // Pattern 2: Numeric MM/DD/YYYY — require 4-digit year to avoid phone/price matches
+  const numericPattern = /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12]\d|3[01])[\/\-](202[5-9])\b/g;
+  for (const m of cleanHtml.matchAll(numericPattern)) {
+    const [, mm, dd, yyyy] = m;
+    candidates.push({ date: `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`, idx: m.index, named: false });
+  }
+
+  for (const { date, idx, named } of candidates) {
+    if (events.length >= MAX_PER_RESTAURANT) break;
     if (date < today || date > in6mo) continue;
-
-    const idx = match.index;
-    const context = html.slice(Math.max(0, idx - 150), idx + 250)
+    const context = cleanHtml.slice(Math.max(0, idx - 200), idx + 300)
       .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
+    if (!named && !EVENT_KEYWORDS.test(context)) continue;
     events.push({
       id: "rest_" + Math.random().toString(36).slice(2), source: "ai",
       title: `Event at ${restaurant.name}`,
       date, time: "", loc: restaurant.loc,
       desc: context.slice(0, 120),
-      cat: "Community", icon: "🍽️",
+      cat: "Community", icon: "\uD83C\uDF7D\uFE0F",
       url: sourceUrl, facebook: "", tickets: "", recurring: null, featured: false,
     });
   }
@@ -282,7 +284,7 @@ async function searchRegionalBatch() {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 2000,
       system: "You are a JSON API. Search the web for real events. ONLY include events you actually find on real websites — never invent or guess. Return ONLY a raw JSON array starting with [ and ending with ]. No markdown, no code fences, no explanation.",
       tools: [{ type: "web_search_20250305", name: "web_search" }],
@@ -343,7 +345,9 @@ async function main() {
   ]);
   allEvents.push(...parks, ...chamber, ...ticketmaster, ...restaurants);
 
-  // 2. Single AI batch — regional venues only
+  // 2. Wait 90s then run single AI batch — lets rate limit window clear
+  console.log("\nWaiting 90s before AI batch...");
+  await sleep(90000);
   const regional = await searchRegionalBatch();
   allEvents.push(...regional);
 
