@@ -24,7 +24,7 @@ const RESTAURANTS = [
   { name:"Casa Agave",                           addr:"4542 N. Prospect Rd", phone:"(309) 328-2272", url:"https://www.casaagaveheights.com",              type:"Mexican & Tequila Bar", icon:"🌮", promo:"Modern Mexican cocina · Premium tequilas & mezcals · Happy Hour Mon–Fri 2–5 PM", hours:"Mon–Wed 11 AM–9:30 PM · Thu 11 AM–10 PM · Fri 11 AM–10 PM · Sat 10 AM–10 PM" },
   { name:"Frank's",                              addr:"4408 N. Prospect Rd", phone:"(309) 750-2323", url:"https://www.frankspeoria.com",                  type:"Italian Beef · Carryout", icon:"🥩", promo:"Famous slow-roasted Italian beef · Chicago-style hot dogs · All gluten-free bread", hours:"Mon–Sat 11 AM–7 PM" },
   { name:"Leaves 'n Beans",                      addr:"4800 N. Prospect Rd", phone:"(309) 688-7685", url:"https://www.lnbcoffee.com/peoria-heights",      type:"Coffee & Café",  icon:"☕", promo:"In-house roasted coffee since 1983 · Espresso, teas & seasonal drinks · Breakfast & lunch", hours:"Mon–Sat 7 AM–5 PM · Sun 8 AM–4 PM" },
-  { name:"Bust'd Brewing",                       addr:"4450 N. Prospect Rd", phone:"",               url:"https://www.bustdbrewing.com",                  type:"Craft Brewery",  icon:"🍺", promo:"Family-owned brewpub · 8+ small-batch beers on tap · Events year-round",       hours:"Check website for hours" },
+  { name:"Bust'd Brewing",                       addr:"4408 N. Prospect Rd", phone:"(309) 966-0148", url:"https://www.bustdbrewing.com",                  type:"Craft Brewery",  icon:"🍺", promo:"Family-owned brewpub · 8+ small-batch beers on tap · Events year-round",       hours:"Check website for hours" },
   { name:"Olio & Vino",                          addr:"4603 N. Prospect Rd", phone:"(309) 685-5505", url:"https://olioandvino.com",                       type:"Wine & Olive Oil", icon:"🍷", promo:"Premium EVOO & balsamic tastings · Patio dining · Great for gifts",            hours:"Mon–Sat 10 AM–7 PM" },
   { name:"W.E. Sullivan's Irish Pub",             addr:"4218 N. Prospect Rd",          phone:"",               url:"https://wesullivansirishpub.com",              type:"Irish Pub",      icon:"🍀", promo:"Authentic Irish pub · Live music & events · Full bar",                        hours:"Check website for hours" },
   { name:"Cafe Santa Rosa",                      addr:"4450 N. Prospect Rd", phone:"",               url:"https://cafesantarosa.co/", type:"Café & Events",  icon:"🎵", promo:"Farm-to-cup specialty coffee · RESONATE EDM nights monthly · Private event venue", hours:"Check social media for hours" },
@@ -690,7 +690,7 @@ const VENUE_TYPE_COLOR = {
   "Mexican & Tequila Bar":"#15803d",
   "Italian Beef · Carryout":"#9f1239",
   "Craft Brewery":        "#1d4ed8",
-  "Wine & Olive Oil":     "#6d28d9",
+  "Wine "Wine & Olive Oil":     "#6d28d9", Olive Oil":     "#6d28d9",
   "Juice Bar & Wellness": "#16a34a",
 };
 function DiningTab() {
