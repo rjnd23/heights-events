@@ -2,37 +2,36 @@
 // Runs via GitHub Actions daily — no time limit, no rate limit pressure
 // Does ALL searches, waits between batches, saves to Upstash Redis
 
-const ANTHROPIC_API_KEY      = process.env.ANTHROPIC_API_KEY;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function redisSave(events) {
-  const r = await fetch(UPSTASH_REDIS_REST_URL, {
+  const r = await fetch(`${UPSTASH_REDIS_REST_URL}/set/events`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(["SET", "events", JSON.stringify(events)]),
+    body: JSON.stringify({ value: JSON.stringify(events) }),
   });
-  await fetch(UPSTASH_REDIS_REST_URL, {
+  await fetch(`${UPSTASH_REDIS_REST_URL}/set/events_updated`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(["SET", "events_updated", Date.now().toString()]),
+    body: JSON.stringify({ value: Date.now().toString() }),
   });
-  const result = await r.json();
-  return result.result === "OK";
+  return r.ok;
 }
 
 async function searchBatch(searches, batchName) {
-  const now    = new Date();
-  const today  = now.toISOString().split("T")[0];
-  const in3mo  = new Date(Date.now() + 90*24*60*60*1000).toISOString().split("T")[0];
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
+  const in3mo = new Date(Date.now() + 90*24*60*60*1000).toISOString().split("T")[0];
   const dayName = now.toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
 
   console.log(`\n--- ${batchName} ---`);
@@ -45,7 +44,7 @@ async function searchBatch(searches, batchName) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-sonnet-4-6",
       max_tokens: 5000,
       system: "You are a JSON API. Search the web for real events. ONLY include events you actually find on real websites — never invent or guess. Return ONLY a raw JSON array starting with [ and ending with ]. No markdown, no code fences, no explanation.",
       tools: [{ type: "web_search_20250305", name: "web_search" }],
@@ -88,45 +87,55 @@ Return all found events as a JSON array. Each object must have EXACTLY:
 }
 
 async function main() {
-  if (!ANTHROPIC_API_KEY)      { console.error("Missing ANTHROPIC_API_KEY"); process.exit(1); }
+  if (!ANTHROPIC_API_KEY) { console.error("Missing ANTHROPIC_API_KEY"); process.exit(1); }
   if (!UPSTASH_REDIS_REST_URL) { console.error("Missing UPSTASH_REDIS_REST_URL"); process.exit(1); }
   if (!UPSTASH_REDIS_REST_TOKEN){ console.error("Missing UPSTASH_REDIS_REST_TOKEN"); process.exit(1); }
 
   console.log("Starting event refresh...");
   const allEvents = [];
 
-  // BATCH 1: High-priority regional venues
+  // BATCH 1: Regional & civic venues
   const b1 = await searchBatch(`Search for events at each of these:
-1. "Kenny's Pub" Peoria IL live music events 2026 — ticketed shows
-2. "Friendly Valley Tap" Peoria IL live music events 2026
+1. site:kennyswestside.com events live music 2026 OR "Kenny's Westside" Peoria IL events 2026
+2. site:kennyswestside.com/friendly-valley-tavern events 2026 OR "Friendly Valley Tavern" Peoria IL events 2026
 3. "Peoria Civic Center" concerts events 2026
 4. "CEFCU Stage" Peoria IL events 2026
-5. site:peoriaheightschamber.com events 2026 — St Patrick's Day Parade, Hot in the Heights, After Hours, Bar Stool Open`, "Batch 1: Regional");
+5. site:peoriaparks.org/events/ OR "Peoria Park District" upcoming events 2026`, "Batch 1: Regional & Civic");
   allEvents.push(...b1);
 
   console.log("Waiting 180s before batch 2...");
   await sleep(180000);
 
-  // BATCH 2: Prospect Rd — group 1
-  const b2 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
-1. "Pour Bros Craft Taproom" Peoria Heights events 2026
-2. "Bust'd Brewing" Peoria Heights events 2026
-3. "W.E. Sullivan's" Peoria Heights events 2026
-4. "The Publik House" Peoria Heights events 2026
-5. "Oliver's in the Heights" Peoria Heights events 2026`, "Batch 2: Prospect Rd A");
+  // BATCH 2: Chamber + Prospect Rd A
+  const b2 = await searchBatch(`Search for events at each of these:
+1. site:peoriaheightschamber.com events 2026 — St Patrick's Day Parade, Hot in the Heights, After Hours, Bar Stool Open
+2. "Pour Bros Craft Taproom" Peoria Heights events 2026
+3. "Bust'd Brewing" Peoria Heights events 2026
+4. site:wesullivansirishpub.com events 2026 OR "W.E. Sullivan's" Peoria Heights events 2026`, "Batch 2: Chamber & Prospect Rd A");
   allEvents.push(...b2);
 
   console.log("Waiting 180s before batch 3...");
   await sleep(180000);
 
-  // BATCH 3: Prospect Rd — group 2
+  // BATCH 3: Prospect Rd B
   const b3 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
-1. "Brienzo's" OR "Clink Bar" Peoria Heights events 2026
-2. "Silver Dollar Tavern" Peoria Heights events 2026
-3. "Casa Agave" Peoria Heights events 2026
-4. "Joe's Original Italian" Peoria Heights events 2026
-5. "Cafe Santa Rosa" OR "Olio Vino" OR "Peoria Pizza Works" OR "Frank's" Peoria Heights events 2026`, "Batch 3: Prospect Rd B");
+1. "The Publik House" Peoria Heights events 2026
+2. site:oliversintheheights.com events 2026 OR "Oliver's in the Heights" Peoria Heights IL events 2026
+3. "Brienzo's" Peoria Heights events 2026 OR "Clink Bar" Peoria Heights events 2026
+4. "Silver Dollar Tavern" Peoria Heights events 2026`, "Batch 3: Prospect Rd B");
   allEvents.push(...b3);
+
+  console.log("Waiting 180s before batch 4...");
+  await sleep(180000);
+
+  // BATCH 4: Prospect Rd C + Wellness
+  const b4 = await searchBatch(`Search for events at each of these Peoria Heights Prospect Rd venues:
+1. "Casa Agave" Peoria Heights events 2026
+2. "Joe's Original Italian" Peoria Heights events 2026
+3. site:cafesantarosa.co events 2026 OR "Cafe Santa Rosa" Peoria events 2026
+4. "Olio Vino" olioandvino.com events 2026 OR "Peoria Pizza Works" events 2026 OR "Frank's" Peoria Heights events 2026
+5. site:feelslikeohm.square.site events 2026 OR "Feels Like Ohm" Peoria Heights events yoga wellness 2026`, "Batch 4: Prospect Rd C & Wellness");
+  allEvents.push(...b4);
 
   // Deduplicate by title+date
   const seen = new Set();
