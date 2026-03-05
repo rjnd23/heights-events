@@ -13,7 +13,7 @@ const RESTAURANTS = [
   { name:"Joe's Original Italian & Martini Bar", addr:"4609 N. Prospect Rd", phone:"(309) 682-7007", url:"https://joesoriginalitalianandmartinibar.com", type:"Italian",        icon:"🍝", promo:"Happy Hour Mon–Fri 4–7 PM · Half-price martinis",                              hours:"Tue–Sun 4 PM–Close" },
   { name:"The Publik House",                     addr:"4614 N. Prospect Rd", phone:"(309) 839-2127", url:"https://www.publikhousepub.com",               type:"Gastropub",      icon:"🍺", promo:"Trivia Night every Wednesday · Craft beer flights $10",                         hours:"Mon–Sun 11 AM–2 AM" },
   { name:"Peoria Pizza Works",                   addr:"3921 N. Prospect Rd", phone:"(309) 682-5446", url:"https://pizzaworkspeoria.com",                  type:"Pizza",          icon:"🍕", promo:"All-you-can-eat buffet Mon–Fri 11 AM–1:30 PM · Open mic Thursdays",             hours:"Mon–Sat 11 AM–2 AM · Sun 3 PM–12 AM" },
-  { name:"Oliver's in the Heights",              addr:"1231 E. Samuel Ave",  phone:"(309) 992-8668", url:"https://www.facebook.com/OliversInTheHeights",  type:"Pizza & Pub",    icon:"🎯", promo:"Half-price wings every Monday · Sunday NFL packages",                           hours:"Tue–Sun 11 AM–11 PM" },
+  { name:"Oliver's in the Heights",              addr:"1231 E. Samuel Ave",  phone:"(309) 992-8668", url:"https://www.oliversintheheights.com/",  type:"Pizza & Pub",    icon:"🎯", promo:"Half-price wings every Monday · Sunday NFL packages",                           hours:"Tue–Sun 11 AM–11 PM" },
   { name:"Silver Dollar",                        addr:"4322 N. Prospect Rd", phone:"(309) 685-9413", url:"https://silverdollartavern.com",               type:"Bar & Diner",    icon:"🥞", promo:"Hearty breakfast & lunch · Live bands, karaoke & open mic nights",              hours:"Tue–Sun 7 AM–1 AM" },
   // ── Heritage Square (4450 N. Prospect) ──
   { name:"Pour Bros Craft Taproom",              addr:"4450 N. Prospect Rd", phone:"(309) 265-6808", url:"https://www.pourbros.com/peoria-heights",        type:"Taproom",        icon:"🍻", promo:"Illinois' first pour-your-own taproom · 60+ beers, wines & ciders on tap",     hours:"Mon–Sun 12 PM–11 PM" },
@@ -26,7 +26,9 @@ const RESTAURANTS = [
   { name:"Leaves 'n Beans",                      addr:"4800 N. Prospect Rd", phone:"(309) 688-7685", url:"https://www.lnbcoffee.com/peoria-heights",      type:"Coffee & Café",  icon:"☕", promo:"In-house roasted coffee since 1983 · Espresso, teas & seasonal drinks · Breakfast & lunch", hours:"Mon–Sat 7 AM–5 PM · Sun 8 AM–4 PM" },
   { name:"Bust'd Brewing",                       addr:"4450 N. Prospect Rd", phone:"",               url:"https://www.bustdbrewing.com",                  type:"Craft Brewery",  icon:"🍺", promo:"Family-owned brewpub · 8+ small-batch beers on tap · Events year-round",       hours:"Check website for hours" },
   { name:"Olio & Vino",                          addr:"4603 N. Prospect Rd", phone:"(309) 685-5505", url:"https://olioandvino.com",                       type:"Wine & Olive Oil", icon:"🍷", promo:"Premium EVOO & balsamic tastings · Patio dining · Great for gifts",            hours:"Mon–Sat 10 AM–7 PM" },
-  { name:"Cafe Santa Rosa",                      addr:"4450 N. Prospect Rd", phone:"",               url:"https://www.facebook.com/CafeSantaRosaPeoria", type:"Café & Events",  icon:"🎵", promo:"Farm-to-cup specialty coffee · RESONATE EDM nights monthly · Private event venue", hours:"Check social media for hours" },
+  { name:"W.E. Sullivan's Irish Pub",             addr:"4218 N. Prospect Rd",          phone:"",               url:"https://wesullivansirishpub.com",              type:"Irish Pub",      icon:"🍀", promo:"Authentic Irish pub · Live music & events · Full bar",                        hours:"Check website for hours" },
+  { name:"Cafe Santa Rosa",                      addr:"4450 N. Prospect Rd", phone:"",               url:"https://cafesantarosa.co/", type:"Café & Events",  icon:"🎵", promo:"Farm-to-cup specialty coffee · RESONATE EDM nights monthly · Private event venue", hours:"Check social media for hours" },
+  { name:"Feels Like Ohm",                       addr:"5901 N. Prospect Rd, Ste 101A", phone:"(309) 407-2913", url:"https://feelslikeohm.square.site/", type:"Juice Bar & Wellness", icon:"🥤", promo:"Cold-pressed organic juices, smoothies & espresso · Yoga classes & wellness events · Female-owned & family-operated", hours:"Mon–Wed 7 AM–6 PM · Thu–Sat 7 AM–9 PM · Sun 10 AM–4 PM" },
 ];
 
 function fmtDate(s) {
@@ -689,6 +691,7 @@ const VENUE_TYPE_COLOR = {
   "Italian Beef · Carryout":"#9f1239",
   "Craft Brewery":        "#1d4ed8",
   "Wine & Olive Oil":     "#6d28d9",
+  "Juice Bar & Wellness": "#16a34a",
 };
 function DiningTab() {
   const [q, setQ] = useState("");
