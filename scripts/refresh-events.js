@@ -178,54 +178,46 @@ const RESTAURANTS = [
 ];
 
 // Try to extract events from raw HTML — best effort, works on server-rendered sites
+// ONLY matches named month patterns to avoid false positives from prices/phone numbers
 function parseEventsFromHtml(html, restaurant, sourceUrl) {
   const today = new Date().toISOString().split("T")[0];
+  const in6mo = new Date(Date.now() + 180*24*60*60*1000).toISOString().split("T")[0];
   const year = new Date().getFullYear();
   const events = [];
+  const MAX_PER_RESTAURANT = 20;
 
-  // Look for date patterns: "March 15", "Mar 15", "03/15", "03-15-2026"
-  const datePattern = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}(?:,?\s*\d{4})?\b|\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b/gi;
+  // ONLY match written month names — never bare numeric patterns like 3/15 or 309-555-1234
+  const datePattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?\b/gi;
   const dateMatches = [...html.matchAll(datePattern)];
 
   if (dateMatches.length === 0) return events;
 
   for (const match of dateMatches) {
-    const raw = match[0];
+    if (events.length >= MAX_PER_RESTAURANT) break;
+
+    const [, monRaw, dayRaw, yearRaw] = match;
+    const mon = MONTH_MAP[monRaw.toLowerCase().slice(0, 3)];
+    if (!mon) continue;
+
+    const curMonth = new Date().getMonth() + 1;
+    const evMonth = parseInt(mon, 10);
+    const evYear = yearRaw
+      ? (yearRaw.length === 2 ? "20" + yearRaw : yearRaw)
+      : (evMonth < curMonth ? String(year + 1) : String(year));
+
+    const date = `${evYear}-${mon}-${dayRaw.padStart(2, "0")}`;
+    if (date < today || date > in6mo) continue;
+
     const idx = match.index;
-    // Grab surrounding context — title likely nearby
-    const context = html.slice(Math.max(0, idx - 200), idx + 300)
+    const context = html.slice(Math.max(0, idx - 150), idx + 250)
       .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-    // Try to parse a YYYY-MM-DD date
-    let date = "";
-    const fullMatch = raw.match(/(\w+)\s+(\d{1,2}),?\s*(\d{4})/);
-    const shortMatch = raw.match(/(\w+)\s+(\d{1,2})$/i);
-    const numMatch = raw.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
-    if (fullMatch) {
-      const mon = MONTH_MAP[fullMatch[1].toLowerCase().slice(0, 3)];
-      if (mon) date = `${fullMatch[3]}-${mon}-${fullMatch[2].padStart(2, "0")}`;
-    } else if (shortMatch) {
-      const mon = MONTH_MAP[shortMatch[1].toLowerCase().slice(0, 3)];
-      if (mon) {
-        const curMonth = new Date().getMonth() + 1;
-        const evMonth = parseInt(mon, 10);
-        const evYear = evMonth < curMonth ? year + 1 : year;
-        date = `${evYear}-${mon}-${shortMatch[2].padStart(2, "0")}`;
-      }
-    } else if (numMatch) {
-      const evYear = numMatch[3] ? (numMatch[3].length === 2 ? "20" + numMatch[3] : numMatch[3]) : year.toString();
-      date = `${evYear}-${numMatch[1].padStart(2, "0")}-${numMatch[2].padStart(2, "0")}`;
-    }
-
-    if (!date || date < today) continue;
-
-    // Use context as description, capped at 120 chars
-    const desc = context.slice(0, 120);
     events.push({
       id: "rest_" + Math.random().toString(36).slice(2), source: "ai",
       title: `Event at ${restaurant.name}`,
       date, time: "", loc: restaurant.loc,
-      desc, cat: "Community", icon: "🍽️",
+      desc: context.slice(0, 120),
+      cat: "Community", icon: "🍽️",
       url: sourceUrl, facebook: "", tickets: "", recurring: null, featured: false,
     });
   }
